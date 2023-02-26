@@ -65,7 +65,7 @@ function transform(i: number) {
       <div class="max-md:relative md:grid md:grid-cols-2">
         <!-- Palette -->
         <div
-          class="mt-64 md:mt-0 md:col-start-1 md:overflow-auto py-4 md:h-screen flex flex-col gap-2"
+          class="mt-48 md:mt-0 md:col-start-1 md:overflow-auto py-4 md:h-screen flex flex-col gap-2"
         >
           <!-- Scheme Bar -->
           {
@@ -74,7 +74,7 @@ function transform(i: number) {
                 {/* Scheme Title */}
                 <h2
                   id={scheme}
-                  class="mb-2 font-semibold tracking-wide max-md:scroll-mt-64"
+                  class="mb-2 font-semibold tracking-wide max-md:scroll-mt-48"
                 >
                   <a href={`#${scheme}`}>{scheme}</a>
                 </h2>
@@ -116,7 +116,7 @@ function transform(i: number) {
             <!-- Color Models -->
             <>
               <!-- CMYK -->
-              <div class="flex gap-3">
+              <div class="flex gap-3 mt-3 md:mt-0">
                 {
                   CMYK.map(({ name, initialText, fillColor }) => (
                     <div class="flex items-center justify-center gap-2">
@@ -160,7 +160,7 @@ function transform(i: number) {
                 }
               </div>
               <!-- Actions -->
-              <div class="flex justify-center gap-4">
+              <div class="flex justify-center gap-4 mt-3 md:mt-0">
                 {
                   ['HEX', 'RGB', 'CMYK', 'HSL'].map((i) => (
                     <Button title={i} dataAction="copyColor" />
@@ -327,7 +327,6 @@ function transform(i: number) {
         s = (max - min) / (2 - 2 * l)
       }
 
-      console.log(h)
       // Determine the output format based on the type argument
       switch (type) {
         case 'HEX':
