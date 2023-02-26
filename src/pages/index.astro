@@ -1,9 +1,352 @@
 ---
+import Container from 'src/components/Container.astro'
 import Layout from '../layouts/Layout.astro'
+import Progress from 'src/components/Progress.astro'
+import Button from 'src/components/Button.astro'
+import type { ColorModelMeta } from '../type'
+import { colors } from '../model'
+
+/** Metadata of the CMYK color model. */
+const CMYK: ColorModelMeta[] = [
+  {
+    name: 'C',
+    initialText: '0',
+    fillColor: '#06b6d4',
+  },
+  {
+    name: 'M',
+    initialText: '0',
+    fillColor: '#f43f5e',
+  },
+  {
+    name: 'Y',
+    initialText: '0',
+    fillColor: '#facc15',
+  },
+  {
+    name: 'K',
+    initialText: '0',
+    fillColor: '#111827',
+  },
+]
+
+/** Metadata of the RGB color model. */
+const RGB: ColorModelMeta[] = [
+  {
+    name: 'R',
+    initialText: '255',
+    fillColor: '#dc2626',
+  },
+  {
+    name: 'G',
+    initialText: '255',
+    fillColor: '#22c55e',
+  },
+  {
+    name: 'B',
+    initialText: '255',
+    fillColor: '#2563eb',
+  },
+]
+
+/**
+ * Transform an index to the shade.
+ * @param {number} i Index.
+ * @returns The shade.
+ */
+function transform(i: number) {
+  return i === 0 ? 50 : i * 100
+}
 ---
 
-<Layout title="Welcome to Astro.">
-  <main></main>
-</Layout>
+<Layout title="Tailwind Palette">
+  <main>
+    <Container>
+      <div class="max-md:relative md:grid md:grid-cols-2">
+        <!-- Palette -->
+        <div
+          class="mt-64 md:mt-0 md:col-start-1 md:overflow-auto py-4 md:h-screen flex flex-col gap-2"
+        >
+          <!-- Scheme Bar -->
+          {
+            colors.map(({ scheme, cells }) => (
+              <div>
+                {/* Scheme Title */}
+                <h2
+                  id={scheme}
+                  class="mb-2 font-semibold tracking-wide max-md:scroll-mt-64"
+                >
+                  <a href={`#${scheme}`}>{scheme}</a>
+                </h2>
+                {/* Scheme Cells */}
+                <div class="grid grid-cols-5 gap-2 md:grid-cols-10">
+                  {cells.map((cell, i) => (
+                    <div>
+                      <div
+                        data-theme={`${scheme.toLowerCase()}-${transform(i)}`}
+                        data-value={cell}
+                        class="h-8 cursor-pointer rounded"
+                        style={{ backgroundColor: cell }}
+                      />
+                      <h3 class="mt-1 flex items-center justify-center truncate text-xs text-gray-600">
+                        {transform(i)}
+                      </h3>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))
+          }
+        </div>
+        <!-- Preview -->
+        <div
+          class="max-md:fixed max-md:top-0 max-md:left-0 max-md:right-0 md:col-start-2 max-md:bg-white max-md:border-b py-4 flex flex-col items-center md:h-screen justify-center"
+        >
+          <!-- Card -->
+          <div
+            class="md:py-6 md:px-10 md:min-w-max md:rounded-lg bg-white md:border flex flex-col justify-between items-center gap-2 md:gap-6 md:shadow-xl"
+          >
+            <!-- Theme Title -->
+            <h2
+              id="currThemeTitle"
+              class="text-lg md:text-xl tracking-wide text-black font-mono"
+            >
+              Tailwind Default Palette
+            </h2>
+            <!-- Color Models -->
+            <>
+              <!-- CMYK -->
+              <div class="flex gap-3">
+                {
+                  CMYK.map(({ name, initialText, fillColor }) => (
+                    <div class="flex items-center justify-center gap-2">
+                      <span
+                        class="select-none text-sm opacity-60 md:text-lg"
+                        style={{ color: fillColor }}
+                      >
+                        {name}
+                      </span>
+                      <Progress
+                        dataTitle="currThemeCMYK"
+                        dataPath="currThemeCMYK"
+                        title={initialText}
+                        fillColor={fillColor}
+                        strokeWidth={2}
+                      />
+                    </div>
+                  ))
+                }
+              </div>
+              <!-- RGB -->
+              <div class="flex gap-3">
+                {
+                  RGB.map(({ name, initialText, fillColor }) => (
+                    <div class="flex items-center justify-center gap-2">
+                      <span
+                        class="select-none text-sm opacity-80 md:text-lg"
+                        style={{ color: fillColor }}
+                      >
+                        {name}
+                      </span>
+                      <Progress
+                        dataTitle="currThemeRGB"
+                        dataPath="currThemeRGB"
+                        title={initialText}
+                        fillColor={fillColor}
+                        strokeWidth={2}
+                      />
+                    </div>
+                  ))
+                }
+              </div>
+              <!-- Actions -->
+              <div class="flex justify-center gap-4">
+                {
+                  ['HEX', 'RGB', 'CMYK', 'HSL'].map((i) => (
+                    <Button title={i} dataAction="copyColor" />
+                  ))
+                }
+              </div>
+            </>
+          </div>
+        </div>
+      </div>
+    </Container>
+  </main>
+  <script>
+    const RADIUS = 22
+    const ROUND = 2 * Math.PI * RADIUS
+    const bodyElement = document.querySelector('body') as HTMLBodyElement
+    let currGlobalTheme = '#ffffff'
+    const currThemeTitleEl = document.querySelector(
+      '#currThemeTitle'
+    ) as HTMLElement
+    const cmykTitleEls = Array.from(
+      document.querySelectorAll('[data-title=currThemeCMYK]')
+    ) as HTMLElement[]
+    const cmykPathEls = Array.from(
+      document.querySelectorAll('[data-path=currThemeCMYK]')
+    ) as HTMLElement[]
+    const rgbTitleEls = Array.from(
+      document.querySelectorAll('[data-title=currThemeRGB]')
+    ) as HTMLElement[]
+    const rgbPathEls = Array.from(
+      document.querySelectorAll('[data-path=currThemeRGB]')
+    ) as HTMLElement[]
+    const copyColorBtns = Array.from(
+      document.querySelectorAll('[data-action=copyColor]')
+    ) as HTMLElement[]
 
-<style></style>
+    const colorMedelSystems = ['HEX', 'RGB', 'CMYK', 'HSL'] as const
+    copyColorBtns.forEach((btn, i) => {
+      btn.addEventListener('click', async () => {
+        await navigator.clipboard.writeText(
+          getColorModel(
+            currGlobalTheme,
+            colorMedelSystems[i] as (typeof colorMedelSystems)[number]
+          )
+        )
+      })
+    })
+
+    document.addEventListener('click', (e) => {
+      const el = e.target as HTMLElement
+      const val = el.getAttribute('data-value')
+      if (val && currThemeTitleEl) {
+        currGlobalTheme = val
+        currThemeTitleEl.textContent = `${el.getAttribute(
+          'data-theme'
+        )} (${val.toUpperCase()})`
+        const [rgb, cmyk] = hexToRgbAndCmyk(val.slice(1))
+        bodyElement.style.backgroundColor = val
+        cmykTitleEls.forEach(
+          (cmykEl, i) =>
+            (cmykEl.textContent = '' + Math.floor((cmyk?.[i] ?? 0) * 100))
+        )
+        cmykPathEls.forEach((cmykPathEl, i) => {
+          const arc = getStrokeFillArcLength(cmyk?.[i] ?? 0, 1)
+          cmykPathEl.style.strokeDasharray = `${arc} ${ROUND - arc}`
+        })
+        rgbTitleEls.forEach(
+          (el, i) => (el.textContent = '' + Math.floor(rgb?.[i] ?? 0))
+        )
+        rgbPathEls.forEach((rgbPathEl, i) => {
+          const arc = getStrokeFillArcLength(rgb?.[i] ?? 0, 255)
+          rgbPathEl.style.strokeDasharray = `${arc} ${ROUND - arc}`
+        })
+      }
+    })
+
+    /**
+     * Convert HEX to RGB and CMYK.
+     */
+    function hexToRgbAndCmyk(hex: string) {
+      // convert hex to RGB values
+      const r = parseInt(hex.substring(0, 2), 16) / 255
+      const g = parseInt(hex.substring(2, 4), 16) / 255
+      const b = parseInt(hex.substring(4, 6), 16) / 255
+
+      // calculate the maximum of the RGB values
+      const max = Math.max(r, g, b)
+
+      // calculate the K value (key)
+      const k = 1 - max
+
+      // calculate the C value (cyan)
+      const c = (1 - r - k) / (1 - k)
+
+      // calculate the M value (magenta)
+      const m = (1 - g - k) / (1 - k)
+
+      // calculate the Y value (yellow)
+      const y = (1 - b - k) / (1 - k)
+
+      // return the CMYK values as an object
+      return [
+        [r * 255, g * 255, b * 255],
+        [c, m, y, k],
+      ]
+    }
+
+    /**
+     * Get the length of the filled arc.
+     */
+    function getStrokeFillArcLength(num: number, full: number) {
+      return (num / full) * ROUND
+    }
+
+    /**
+     * Get the value in specified color model system.
+     */
+    function getColorModel(
+      source: string,
+      type: 'HEX' | 'RGB' | 'CMYK' | 'HSL'
+    ) {
+      // Remove the '#' character from the source color if it is present
+      source = source.replace('#', '')
+
+      // Convert the source color from HEX to RGB
+      let r = parseInt(source.substring(0, 2), 16)
+      let g = parseInt(source.substring(2, 4), 16)
+      let b = parseInt(source.substring(4, 6), 16)
+
+      // Calculate the CMYK values
+      let c = 1 - r / 255
+      let m = 1 - g / 255
+      let y = 1 - b / 255
+      let k = Math.min(c, m, y)
+      c = (c - k) / (1 - k)
+      m = (m - k) / (1 - k)
+      y = (y - k) / (1 - k)
+
+      // Calculate the HSL values
+      let h = -Infinity,
+        s: number,
+        l: number
+      ;(r /= 255), (g /= 255), (b /= 255)
+      let max = Math.max(r, g, b),
+        min = Math.min(r, g, b)
+      if (max === min) {
+        h = 0
+      } else if (max === r) {
+        h = (60 * ((g - b) / (max - min))) % 360
+      } else if (max === g) {
+        h = (60 * ((b - r) / (max - min)) + 120) % 360
+      } else if (max === b) {
+        h = (60 * ((r - g) / (max - min)) + 240) % 360
+      }
+      if (h < 0) {
+        h += 360
+      }
+      l = (max + min) / 2
+      if (max === min) {
+        s = 0
+      } else if (l <= 0.5) {
+        s = (max - min) / (2 * l)
+      } else {
+        s = (max - min) / (2 - 2 * l)
+      }
+
+      console.log(h)
+      // Determine the output format based on the type argument
+      switch (type) {
+        case 'HEX':
+          return '#' + source.toUpperCase()
+        case 'RGB':
+          return `rgb(${Math.floor(r * 255)}, ${Math.floor(
+            g * 255
+          )}, ${Math.floor(b * 255)})`
+        case 'CMYK':
+          return `cmyk(${Math.floor(c * 100)}, ${Math.floor(
+            m * 100
+          )}, ${Math.floor(y * 100)}, ${Math.floor(k * 100)})`
+        case 'HSL':
+          return `hsl(${Math.floor(h)}, ${Math.floor(s * 100)}%, ${Math.floor(
+            l * 100
+          )}%)`
+        default:
+          throw new Error('Invalid type argument')
+      }
+    }
+  </script>
+</Layout>

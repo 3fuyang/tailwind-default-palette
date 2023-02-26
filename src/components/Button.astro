@@ -1,0 +1,19 @@
+---
+export interface Props {
+  dataAction: string
+  title: string
+}
+
+const { title, dataAction } = Astro.props
+---
+
+<button
+  data-action={dataAction}
+  type="button"
+  title={`Copy in ${title}`}
+  class="border md:border-2 rounded md:rounded-lg transition-colors duration-300 hover:border-sky-300 hover:text-sky-300 border-neutral-300 text-neutral-300 tracking-wide px-1 md:px-3 md:py-1 text-xs md:text-sm font-semibold"
+>
+  <slot>
+    {title}
+  </slot>
+</button>
